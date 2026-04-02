@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest Book / Kniha hostů – Apartmán Teplice nad Metují</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #2d4a3e;
+    --forest-light: #3d6456;
+    --sand: #f5f0e8;
+    --sand-dark: #e8e0d0;
+    --stone: #8a7968;
+    --stone-light: #b5a898;
+    --cream: #faf8f4;
+    --text: #1e2820;
+    --text-muted: #6b7c72;
+    --error: #c0392b;
+    --success: #27ae60;
+    --border: #d4cdc0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(45,74,62,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(138,121,104,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .logo-mark {
+    width: 56px;
+    height: 56px;
+    background: var(--forest);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .logo-mark svg {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 500;
+    color: var(--forest);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    width: 48px;
+    height: 1px;
+    background: var(--stone-light);
+    margin: 20px auto;
+  }
+
+  .intro {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 20px rgba(45,74,62,0.06);
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--forest);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title .num {
+    width: 26px;
+    height: 26px;
+    background: var(--forest);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Date row */
+  .date-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Field */
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  label .lang {
+    font-weight: 300;
+    opacity: 0.7;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--cream);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--forest-light);
+    box-shadow: 0 0 0 3px rgba(45,74,62,0.1);
+    background: #fff;
+  }
+
+  input.error, select.error, textarea.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a7968' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Guest card */
+  .guest-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 20px rgba(45,74,62,0.06);
+    animation: slideIn 0.3s ease;
+    position: relative;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .guest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .guest-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--forest);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .guest-badge {
+    width: 28px;
+    height: 28px;
+    background: var(--sand-dark);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: var(--forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .guest-badge.primary {
+    background: var(--forest);
+    color: #fff;
+  }
+
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    color: var(--stone);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .remove-btn:hover {
+    border-color: var(--error);
+    color: var(--error);
+    background: rgba(192,57,43,0.05);
+  }
+
+  /* Add guest button */
+  .add-guest-btn {
+    width: 100%;
+    padding: 16px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--forest-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .add-guest-btn:hover {
+    border-color: var(--forest-light);
+    background: rgba(45,74,62,0.04);
+  }
+
+  .add-guest-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--forest);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .submit-btn:hover {
+    background: var(--forest-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(45,74,62,0.25);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Status message */
+  .status {
+    display: none;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .status.success {
+    display: block;
+    background: rgba(39,174,96,0.1);
+    border: 1px solid rgba(39,174,96,0.3);
+    color: #1a7a42;
+  }
+
+  .status.error-msg {
+    display: block;
+    background: rgba(192,57,43,0.08);
+    border: 1px solid rgba(192,57,43,0.25);
+    color: var(--error);
+  }
+
+  /* Required star */
+  .req { color: var(--forest-light); margin-left: 2px; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 0.8rem;
+    color: var(--stone-light);
+  }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 560px) {
+    .card, .guest-card { padding: 24px 20px; }
+    .date-row, .field-row { grid-template-columns: 1fr; }
+    h1 { font-size: 1.9rem; }
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .success-screen .check {
+    width: 72px;
+    height: 72px;
+    background: var(--forest);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  .success-screen .check svg {
+    width: 36px;
+    height: 36px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--forest);
+    margin-bottom: 12px;
+  }
+
+  .success-screen p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <h1>Guest Book</h1>
+    <p class="subtitle">Kniha hostů &nbsp;·&nbsp; Apartmán Teplice nad Metují</p>
+    <div class="divider"></div>
+    <p class="intro">Please fill in the details for all guests staying with us.<br><span style="font-size:0.85em;opacity:0.8">Vyplňte prosím údaje pro všechny hosty.</span></p>
+  </header>
+
+  <!-- Form -->
+  <form id="guestForm">
+
+    <!-- Stay dates -->
+    <div class="card">
+      <div class="card-title">
+        <span class="num">1</span>
+        Stay Details / Údaje o pobytu
+      </div>
+      <div class="date-row">
+        <div class="field">
+          <label>Arrival date <span class="req">*</span><br><span class="lang">Datum příjezdu</span></label>
+          <input type="date" id="arrivalDate" required>
+        </div>
+        <div class="field">
+          <label>Departure date <span class="req">*</span><br><span class="lang">Datum odjezdu</span></label>
+          <input type="date" id="departureDate" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guests -->
+    <div id="guestsContainer"></div>
+
+    <!-- Add guest -->
+    <button type="button" class="add-guest-btn" id="addGuestBtn" onclick="addGuest()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add another guest / Přidat dalšího hosta
+    </button>
+
+    <!-- Submit -->
+    <button type="submit" class="submit-btn" id="submitBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Odeslat knihu hostů
+    </button>
+
+    <div id="statusMsg" class="status"></div>
+
+  </form>
+
+  <!-- Success screen -->
+  <div class="success-screen" id="successScreen">
+    <div class="check">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Thank you! / Děkujeme!</h2>
+    <p>Your registration has been received successfully.<br>
+    <span style="font-size:0.9em;opacity:0.8">Vaše registrace byla úspěšně přijata.</span></p>
+  </div>
+
+  <footer>
+    Apartmán Teplice nad Metují &nbsp;·&nbsp; Nerudova 185 &nbsp;·&nbsp; Secured by Google
+  </footer>
+
+</div>
+
+<script>
+  // ============================================================
+  // NASTAVENÍ – ZMĚŇTE TUTO URL NA VÁŠ APPS SCRIPT URL
+  // ============================================================
+  var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw19svN83cnELfdNDUQ3tLZU3eo2sfCirgas3PddiVDLhNRTFLayRxe2Dv_RO9ORV64/exec";
+  // ============================================================
+
+  var guestCount = 0;
+
+  var nationalities = [
+    "Czech Republic / Česká republika",
+    "Slovakia / Slovensko",
+    "Germany / Německo",
+    "Poland / Polsko",
+    "Austria / Rakousko",
+    "Hungary / Maďarsko",
+    "United Kingdom / Velká Británie",
+    "France / Francie",
+    "Italy / Itálie",
+    "Netherlands / Nizozemsko",
+    "Spain / Španělsko",
+    "United States / USA",
+    "Ukraine / Ukrajina",
+    "Russia / Rusko",
+    "Romania / Rumunsko",
+    "Other / Jiné"
+  ];
+
+  function addGuest(required) {
+    if (guestCount >= 8) {
+      alert("Maximum 8 guests / Maximálně 8 hostů");
+      return;
+    }
+    guestCount++;
+    var isFirst = guestCount === 1;
+    var req = isFirst ? ' <span class="req">*</span>' : '';
+    var reqAttr = isFirst ? 'required' : '';
+
+    var natOptions = nationalities.map(function(n) {
+      return '<option value="' + n + '">' + n + '</option>';
+    }).join('');
+
+    var card = document.createElement('div');
+    card.className = 'guest-card';
+    card.id = 'guest-' + guestCount;
+    card.innerHTML = '<div class="guest-header">' +
+      '<div class="guest-title">' +
+        '<span class="guest-badge ' + (isFirst ? 'primary' : '') + '">' + guestCount + '</span>' +
+        ' Guest ' + guestCount + ' / Host ' + guestCount +
+        (isFirst ? '<span style="font-size:0.75rem;color:var(--stone);font-family:DM Sans;font-weight:400;margin-left:6px;">(main guest / hlavní host)</span>' : '') +
+      '</div>' +
+      (!isFirst ? '<button type="button" class="remove-btn" onclick="removeGuest(' + guestCount + ')">Remove / Odebrat</button>' : '') +
+    '</div>' +
+
+    '<div class="field-row">' +
+      '<div class="field">' +
+        '<label>Last name(s)' + req + '<br><span class="lang">Příjmení</span></label>' +
+        '<input type="text" name="g' + guestCount + '_lastName" placeholder="Novák" ' + reqAttr + '>' +
+      '</div>' +
+      '<div class="field">' +
+        '<label>First name(s)' + req + '<br><span class="lang">Jméno</span></label>' +
+        '<input type="text" name="g' + guestCount + '_firstName" placeholder="Jan" ' + reqAttr + '>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="field-row">' +
+      '<div class="field">' +
+        '<label>Date of birth' + req + '<br><span class="lang">Datum narození</span></label>' +
+        '<input type="date" name="g' + guestCount + '_dob" ' + reqAttr + '>' +
+      '</div>' +
+      '<div class="field">' +
+        '<label>Nationality' + req + '<br><span class="lang">Státní příslušnost</span></label>' +
+        '<select name="g' + guestCount + '_nationality" ' + reqAttr + '>' +
+          '<option value="">Select / Vyberte</option>' +
+          natOptions +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="field-row">' +
+      '<div class="field">' +
+        '<label>ID or Passport number' + req + '<br><span class="lang">Číslo OP nebo pasu</span></label>' +
+        '<input type="text" name="g' + guestCount + '_docNumber" placeholder="123456789" ' + reqAttr + '>' +
+      '</div>' +
+      '<div class="field">' +
+        '<label>Permanent address' + req + '<br><span class="lang">Trvalé bydliště</span></label>' +
+        '<textarea name="g' + guestCount + '_address" placeholder="Street, City, Country / Ulice, Město, Stát" style="min-height:46px"></textarea>' +
+      '</div>' +
+    '</div>';
+
+    document.getElementById('guestsContainer').appendChild(card);
+
+    if (guestCount >= 8) {
+      document.getElementById('addGuestBtn').style.display = 'none';
+    }
+  }
+
+    function removeGuest(num) {
+    var card = document.getElementById('guest-' + num);
+    if (card) {
+      card.style.animation = 'none';
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(-8px)';
+      card.style.transition = 'all 0.2s';
+      setTimeout(function() { card.remove(); }, 200);
+      guestCount--;
+      document.getElementById('addGuestBtn').style.display = '';
+    }
+  }
+
+  // Form submit
+  document.getElementById('guestForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var arrival = document.getElementById('arrivalDate').value;
+    var departure = document.getElementById('departureDate').value;
+
+    if (!arrival || !departure) {
+      showStatus('Please fill in arrival and departure dates. / Vyplňte datum příjezdu a odjezdu.', 'error-msg');
+      return;
+    }
+
+    if (guestCount === 0) {
+      showStatus('Please add at least one guest. / Přidejte alespoň jednoho hosta.', 'error-msg');
+      return;
+    }
+
+    // Collect guests
+    var guests = [];
+    var guestCards = document.querySelectorAll('.guest-card');
+    for (var i = 0; i < guestCards.length; i++) {
+      var card = guestCards[i];
+      var num = card.id.replace('guest-', '');
+      guests.push({
+        lastName: card.querySelector('[name="g' + num + '_lastName"]').value,
+        firstName: card.querySelector('[name="g' + num + '_firstName"]').value,
+        dob: card.querySelector('[name="g' + num + '_dob"]').value,
+        nationality: card.querySelector('[name="g' + num + '_nationality"]').value,
+        docNumber: card.querySelector('[name="g' + num + '_docNumber"]').value,
+        address: card.querySelector('[name="g' + num + '_address"]').value
+      });
+    }
+
+    var payload = {
+      arrivalDate: arrival,
+      departureDate: departure,
+      guests: guests
+    };
+
+    // Send to Apps Script
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Odesílám...';
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.status === 'ok') {
+        document.getElementById('guestForm').style.display = 'none';
+        document.querySelector('header').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+      } else {
+        showStatus('Error: ' + (data.message || 'Please try again.'), 'error-msg');
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Odeslat knihu hostů';
+      }
+    })
+    .catch(function(err) {
+      showStatus('Connection error. Please try again. / Chyba připojení. Zkuste to znovu.', 'error-msg');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Odeslat knihu hostů';
+    });
+  });
+
+  function showStatus(msg, cls) {
+    var el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status ' + cls;
+  }
+
+  // Set default dates
+  var today = new Date();
+  var tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('arrivalDate').valueAsDate = today;
+  document.getElementById('departureDate').valueAsDate = tomorrow;
+
+  // Add first guest automatically
+  addGuest(true);
+</script>
+</body>
+</html>
