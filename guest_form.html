@@ -688,27 +688,38 @@
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner"></div> Odesílám...';
 
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data.status === 'ok') {
-        document.getElementById('guestForm').style.display = 'none';
-        document.querySelector('header').style.display = 'none';
-        document.getElementById('successScreen').style.display = 'block';
-      } else {
-        showStatus('Error: ' + (data.message || 'Please try again.'), 'error-msg');
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Odeslat knihu hostů';
-      }
-    })
-    .catch(function(err) {
-      showStatus('Connection error. Please try again. / Chyba připojení. Zkuste to znovu.', 'error-msg');
-      btn.disabled = false;
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Odeslat knihu hostů';
-    });
+    // Apps Script vyžaduje no-cors mode + iframe trik pro potvrzení
+    var jsonData = JSON.stringify(payload);
+    
+    // Použijeme skrytý iframe pro callback
+    var iframeName = 'submit_iframe_' + Date.now();
+    var iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Vytvoříme dočasný formulář
+    var tempForm = document.createElement('form');
+    tempForm.method = 'POST';
+    tempForm.action = APPS_SCRIPT_URL;
+    tempForm.target = iframeName;
+    
+    var hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.name = 'data';
+    hiddenField.value = jsonData;
+    tempForm.appendChild(hiddenField);
+    document.body.appendChild(tempForm);
+    tempForm.submit();
+
+    // Po 3 sekundách předpokládáme úspěch (no-cors neumožňuje číst odpověď)
+    setTimeout(function() {
+      document.body.removeChild(tempForm);
+      document.body.removeChild(iframe);
+      document.getElementById('guestForm').style.display = 'none';
+      document.querySelector('header').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+    }, 3000);
   });
 
   function showStatus(msg, cls) {
