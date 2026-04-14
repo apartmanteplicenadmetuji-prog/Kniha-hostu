@@ -569,8 +569,8 @@
     }
     guestCount++;
     var isFirst = guestCount === 1;
-    var req = isFirst ? ' <span class="req">*</span>' : '';
-    var reqAttr = isFirst ? 'required' : '';
+    var req = ' <span class="req">*</span>'; // povinné u všech
+    var reqAttr = 'required'; // všechna pole jsou povinná
 
     var natOptions = nationalities.map(function(n) {
       return '<option value="' + n + '">' + n + '</option>';
@@ -620,7 +620,7 @@
       '</div>' +
       '<div class="field">' +
         '<label>Permanent address' + req + '<br><span class="lang">Trvalé bydliště</span></label>' +
-        '<textarea name="g' + guestCount + '_address" placeholder="Street, City, Country / Ulice, Město, Stát" style="min-height:46px"></textarea>' +
+        '<textarea name="g' + guestCount + '_address" placeholder="Street, City, Country / Ulice, Město, Stát" style="min-height:46px" ' + reqAttr + '></textarea>' +
       '</div>' +
     '</div>';
 
